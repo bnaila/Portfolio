@@ -14,7 +14,7 @@ Données d'horodateurs parisiens, projet bigdata avec BDD MangoDB.
 Analyse de survie avec données sur le cancer du sein.
 
 ## Statistiques pour la Génomique :
-- Regression penalisée vs regression PLS 
+- [Regression penalisée vs regression PLS](https://github.com/bnaila/portfolio/tree/main/Projet%20statistique%20pour%20la%20g%C3%A9nomique)
 - [Algorithme statistique pour la génomique](https://github.com/bnaila/portfolio/tree/main/Rapports%20Algo%20stats%20(g%C3%A9nomique))
   - Rapport 1 : Algorithme seqEM
   - Rapport 2 : Algorithme MCMC
