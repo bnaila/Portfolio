@@ -1,0 +1,639 @@
+---
+title: "MS report for case study"
+author: "Naila Bouterfa"
+date: "27/01/2021"
+output:
+  html_document
+---
+
+
+# Loading of the file and libraries 
+
+The libraries :
+
+```{r message=FALSE, warning=FALSE}
+rm(list=ls())
+#install.packages("openxlsx")
+#install.packages("xlsx")
+#install.packages("stringr")
+#install.packages("tidyverse")
+#install.packages("ggplot2")
+#install.packages("tidyr")
+#install.packages("dplyr")
+#install.packages("kableExtra")
+
+library(openxlsx)
+library(xlsx)
+library(stringr)
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(kableExtra)
+```
+
+File loading :
+
+```{r message=FALSE, warning=FALSE}
+MS_Quest=read.xlsx2("C:/Users/Naila/Desktop/etudedecascarenity/Carenity - Case study - Data - MS out of pocket.xlsx", sheetIndex=1,check.names=FALSE)
+
+kable(head(MS_Quest)) %>%
+  kable_styling(font_size = 9)%>%
+  kableExtra::scroll_box(width = "100%", height = "300px")
+```
+
+
+
+# Data preprocessing
+
+Let's start by modifying the column names, to make the variable easier to manipulate and more adapted for a use in R :
+
+```{r message=FALSE, warning=FALSE}
+
+# We rename the columns
+new_col=c("user","sex","birth_date","diploma","MS_status","work","leave_1","leave_2","leave_3","leave_4", "n_days", "type_MS","age_sympt","MS_diag","med_1","med_2","med_3","med_4","n_GP","fee_GP","n_neuro","fee_neuro","n_ophta","fee_ophta","n_psy","fee_psy","reimb_1","reimb_2","reimb_3","reimb_4","reimb_5","reimb_6","reimb_7","reimb_8","reimb_9","reimb_10")
+
+# We create a new data frame (a copy with the new column names)
+MS_QuestData=MS_Quest
+colnames(MS_QuestData)=new_col
+
+```
+
+
+We can store the corresponding variable names in a table as below :
+
+```{r message=FALSE, warning=FALSE}
+
+old_col=as.vector(colnames(MS_Quest))
+specifications=cbind(old_col,new_col)
+kable(specifications)%>%kable_paper("hover", full_width = F,position = "left") %>%
+  kable_styling(font_size = 9)%>%
+  kableExtra::scroll_box(width = "100%", height = "300px")
+
+```
+
+We notice that the date format for the birth_date variable isn't right
+
+Fixing the date format : 
+
+```{r message=FALSE, warning=FALSE}
+
+#class(MS_QuestData$birth_date)
+
+# In order to apply convertTODate function we need to convert the variable to a character format first
+MS_QuestData$birth_date=as.character.factor(MS_QuestData$birth_date)
+# Conversion to a Date type variable
+new_date=convertToDate(MS_QuestData$birth_date, origin = "1900-01-01")
+# Let's change the date's format
+new_date=format(new_date,format="%d/%m/%Y")
+# Now we add the non numeric values /non-converted ones
+new_date[which(is.na(new_date)==TRUE)]=format(MS_QuestData$birth_date[which(is.na(new_date)==TRUE)],format="%d/%m/%Y")
+
+#class(new_date)
+new_date=as.Date(new_date,format="%d/%m/%Y" ,origin = "1900-01-01")
+
+#We replace the original variable with the new date variable
+MS_QuestData$birth_date=new_date
+
+```
+
+
+Let's add a new informative variable the age of diagnosis, which is easier to read then year of diagnosis
+
+```{r message=FALSE, warning=FALSE}
+MS_QuestData$MS_diag=as.Date(MS_QuestData$MS_diag,format="%Y")
+
+no_na=which(is.na(MS_QuestData$MS_diag)==F)
+
+#which(is.na(MS_QuestData$birth_date)==F)
+
+source("https://raw.githubusercontent.com/jknowles/eeptools/master/R/age_calc.R")
+
+age_diag=rep(NA,dim(MS_QuestData)[1])
+age_diag[no_na]=age_calc(MS_QuestData$birth_date[no_na], MS_QuestData$MS_diag[no_na], units = "years", precise = FALSE)
+
+```
+
+We can now reorganise our variables and add the new one :
+
+```{r message=FALSE, warning=FALSE}
+
+MS_QuestData=cbind(MS_QuestData,age_diag)
+MS_QuestData=MS_QuestData[,c("user","sex","birth_date","diploma","work","MS_status","type_MS","age_sympt","MS_diag","age_diag","leave_1","leave_2","leave_3","leave_4","n_days","med_1","med_2","med_3","med_4","n_GP","fee_GP","n_neuro","fee_neuro","n_ophta","fee_ophta","n_psy","fee_psy","reimb_1","reimb_2","reimb_3","reimb_4","reimb_5","reimb_6","reimb_7","reimb_8","reimb_9","reimb_10" )]
+
+```
+
+As a result we obtain the following dataframe :
+
+```{r message=FALSE, warning=FALSE}
+
+
+kable(head(MS_QuestData)) %>%
+  kable_styling(font_size = 9)%>%
+  kableExtra::scroll_box(width = "100%", height = "300px")
+
+```
+
+
+We can as well convert empty fields into NA and convert dates to the right format 
+
+```{r message=FALSE, warning=FALSE}
+
+MS_QuestData$birth_date=format(MS_QuestData$birth_date,format="%d/%m/%Y")
+MS_QuestData$MS_diag=format(MS_QuestData$MS_diag,format="%Y")
+
+MS_QuestData[MS_QuestData==""]<-NA
+
+kable(head(MS_QuestData)) %>%
+  kable_styling(font_size = 9)%>%
+  kableExtra::scroll_box(width = "100%", height = "300px")
+
+```
+
+
+
+**Table with categorical variables :**
+
+Lets create a second table where the variables are converted into numerical categorical variables 
+
+```{r message=FALSE, warning=FALSE}
+
+MS_QuestData_cat=MS_QuestData
+
+#levels(MS_QuestData_cat$sexe)
+levels(MS_QuestData_cat$sex)=c(1,0)
+kbl_sex=kable(cbind(label=0:1,signification=levels(MS_QuestData$sexe)),caption = "Sex")%>%
+  kable_styling(font_size = 12)
+
+#levels(MS_QuestData_cat$diploma)
+levels(MS_QuestData_cat$diploma)=1:6
+kbl_dip=kable(cbind(label=1:6,signification=levels(MS_QuestData$diploma)),caption="Diploma")%>% kable_styling(font_size = 12)
+
+#levels(MS_QuestData_cat$MS_status)
+levels(MS_QuestData_cat$MS_status)=c(1,0)
+kbl_MS_Status=kable(cbind(label=0:1,signification=levels(MS_QuestData$MS_status)),caption="Multiple Sclerosis status")%>%
+  kable_styling(font_size = 12)
+
+#levels(MS_QuestData_cat$work)
+levels(MS_QuestData_cat$work)=c(NA,1:4)
+kbl_work=kable(cbind(label=c(NA,1:4),signification=levels(MS_QuestData$work)),caption="Work situation")%>%
+  kable_styling(font_size = 12)
+
+
+#levels(MS_QuestData_cat$type_MS)
+levels(MS_QuestData_cat$type_MS)=c(NA,"unknown","PPMS","RRMS","SPMS")
+kbl_MS_type=kable(cbind(label=c(NA,"unknown","PPMS","RRMS","SPMS"),signification=levels(MS_QuestData$type_MS)),caption = "Type of Multiple Sclerosis")%>%
+  kable_styling(font_size = 12)
+
+levels(MS_QuestData_cat$fee_GP)=c(NA,1,2,4,5)
+levels(MS_QuestData_cat$fee_neuro)=c(NA,1,2,4,5,3,6)
+levels(MS_QuestData_cat$fee_ophta)=c(NA,1,4,5,3,6)
+levels(MS_QuestData_cat$fee_psy)=c(NA,1,2)
+
+fees=unique(rbind(cbind(label=c(NA,1,2,4,5),signification=levels(MS_QuestData$fee_GP)),cbind(label=c(NA,1,2,4,5,3,6),signification=levels(MS_QuestData$fee_neuro)),cbind(label=c(NA,1,4,5,3,6),signification=levels(MS_QuestData$fee_ophta)),cbind(label=c(NA,1,2),signification=levels(MS_QuestData$fee_psy))))
+
+fees=as.data.frame(fees)
+fees=fees[order(fees$label),]
+fees=kable(fees,caption = "Fee levels")%>%
+  kable_styling(font_size = 12)
+```
+
+**Tidying the dataframe :**
+
+Let's make the data tidy by pivoting the reply columns so that there no longer response variables in the columns
+
+The concerned variables are the work leave variable, the medical professionel variable and the reimbursment preference variable
+
+
+```{r message=FALSE, warning=FALSE}
+
+pivot_leave= MS_QuestData_cat[,c("user","leave_1","leave_2","leave_3","leave_4")] %>% pivot_longer(c(leave_1,leave_2,leave_3,leave_4), names_prefix = "leave_",names_to = "leave", values_to = "value",values_drop_na = TRUE)
+pivot_leave=pivot_leave[,1:2]
+
+# Joint
+MS_QuestData_tidy=left_join(MS_QuestData_cat,pivot_leave,by="user")[,!names(MS_QuestData_cat)%in%c("leave_1","leave_2","leave_3","leave_4")]
+```
+
+
+```{r message=FALSE, warning=FALSE}
+
+pivot_med=MS_QuestData_cat[,c("user","med_1","med_2","med_3","med_4")] %>% pivot_longer(c(med_1,med_2,med_3,med_4), names_prefix = "med_",names_to = "medical_professional", values_to = "value",values_drop_na = TRUE)
+pivot_med=pivot_med[,1:2]
+
+# Joint
+MS_QuestData_tidy=left_join(MS_QuestData_tidy,pivot_med,by="user")[,!names(MS_QuestData_tidy)%in%c("med_1","med_2","med_3","med_4")]
+```
+
+```{r message=FALSE, warning=FALSE}
+
+pivot_reimb=MS_QuestData_cat[,c("user","reimb_1","reimb_2","reimb_3","reimb_4","reimb_5","reimb_6","reimb_7","reimb_8","reimb_9","reimb_10")] %>% pivot_longer(c(reimb_1, reimb_2, reimb_3, reimb_4, reimb_5, reimb_6, reimb_7, reimb_8, reimb_9, reimb_10), names_prefix = "reimb_",names_to = "hospital_fee", values_to = "value",values_drop_na = TRUE)
+pivot_reimb=pivot_reimb[,1:2]
+
+# Joint
+MS_QuestData_tidy=left_join(MS_QuestData_tidy,pivot_reimb,by="user")[,!names(MS_QuestData_tidy)%in%c("reimb_1","reimb_2","reimb_3","reimb_4","reimb_5","reimb_6","reimb_7","reimb_8","reimb_9","reimb_10")]
+
+```
+
+
+Here is the tidy dataframe :
+
+```{r}
+kable(head(MS_QuestData_tidy))%>%
+  kable_styling(font_size = 9)%>%
+  kableExtra::scroll_box(width = "100%", height = "300px")
+```
+
+
+
+# Data Visualisation of descriptive variables
+
+## Univariate analysis
+
+### Boxplots
+
+Let's consider the 2 quantitative variables which are the age of diagnosis and the age of apparition of first symptoms 
+
+```{r fig.height=3, fig.width=4, message=FALSE, warning=FALSE}
+
+MS_QuestData$age_sympt=as.numeric(MS_QuestData$age_sympt)
+
+summary(MS_QuestData$age_sympt)
+
+ggplot(MS_QuestData, aes(y = age_sympt)) + geom_boxplot()
+
+```
+
+
+
+```{r fig.height=3, fig.width=4, message=FALSE, warning=FALSE}
+
+summary(MS_QuestData$age_diag)
+
+ggplot(MS_QuestData, aes(y = age_diag)) + geom_boxplot()
+
+```
+
+Number of days in a year in which the patient is absent due to MS.
+
+```{r fig.height=3, fig.width=4, message=FALSE, warning=FALSE}
+
+MS_QuestData$n_days=as.numeric(as.character(MS_QuestData$n_days))
+
+summary(MS_QuestData$n_days)
+
+ggplot(MS_QuestData, aes(y = n_days)) + geom_boxplot()
+
+```
+
+Number of visits to different medical professionals :
+
+```{r}
+MS_QuestData$n_GP=as.numeric(as.character(MS_QuestData$n_GP))
+MS_QuestData$n_neuro=as.numeric(as.character(MS_QuestData$n_neuro))
+MS_QuestData$n_ophta=as.numeric(as.character(MS_QuestData$n_ophta))
+MS_QuestData$n_psy=as.numeric(as.character(MS_QuestData$n_psy))
+```
+
+
+```{r fig.height=3, fig.width=4, message=FALSE, warning=FALSE}
+
+summary(MS_QuestData$n_GP)
+ggplot(MS_QuestData, aes(y = n_GP)) + geom_boxplot()
+
+summary(MS_QuestData$n_neuro)
+ggplot(MS_QuestData, aes(y = n_neuro)) + geom_boxplot()
+
+summary(MS_QuestData$n_ophta)
+ggplot(MS_QuestData, aes(y = n_ophta)) + geom_boxplot()
+
+summary(MS_QuestData$n_psy)
+ggplot(MS_QuestData, aes(y = n_psy)) + geom_boxplot()
+
+```
+
+
+
+### Histograms and bar charts
+
+```{r message=FALSE, warning=FALSE}
+
+# Age of diagnosis
+ggplot(MS_QuestData,aes(age_diag))+
+  geom_histogram(breaks = seq(15,65,5))+
+  theme(axis.text = element_text(family = "serif", size = 10, face = "bold"))+
+  ggtitle("Distribution of the age of diagnosis") +
+  xlab("Age of diagnosis") + ylab("Number of participants")
+
+# Age of first symptoms
+ggplot(MS_QuestData,aes(age_sympt))+
+  geom_histogram(breaks = seq(0,40,5))+
+  theme(axis.text = element_text(family = "serif", size = 10, face = "bold"))+
+  ggtitle("Distribution of the age of first symptoms apparition") +
+  xlab("Age ") + ylab("Number of participants")
+
+
+kbl_sex
+table(MS_QuestData$sex)
+# sex
+
+png("sex_repartition.png")
+ggplot(MS_QuestData,aes(sex))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 10, face = "bold"))+
+  ggtitle("Distribution of the sex of participants") +
+  xlab("Sex") + ylab("Number of participants")
+dev.off()
+
+ggplot(MS_QuestData,aes(sex))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 10, face = "bold"))+
+  ggtitle("Distribution of the sex of participants") +
+  xlab("Sex") + ylab("Number of participants")
+
+#Diploma
+
+kbl_dip
+
+table(MS_QuestData_cat$diploma)
+
+ggplot(MS_QuestData_cat,aes(diploma))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9),fill="darkblue")+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold"))+
+  ggtitle("Education level of participants") +
+  xlab("Diploma") + ylab("Number of participants")
+
+#Repartition selon la situation professionnelle
+
+kbl_work
+
+table(MS_QuestData_cat$work)
+
+ggplot(MS_QuestData_cat,aes(work))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9),fill="darkblue")+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold"))+
+  ggtitle("Professional situation of participants") +
+  xlab("Professional situation") + ylab("Number of participants")
+
+
+# MS
+
+kbl_MS_Status%>%save_kable("t_ms_status.png")
+kbl_MS_Status
+table(MS_QuestData_cat$MS_status)
+
+png("ms_status.png")
+ggplot(MS_QuestData_cat,aes(MS_status))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("") +
+  xlab("Multiple Sclerosis status") + ylab("Number of patients")
+dev.off()
+
+ggplot(MS_QuestData_cat,aes(MS_status))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("") +
+  xlab("Multiple Sclerosis status") + ylab("Number of patients")
+
+# type of MS
+
+kbl_MS_type%>%save_kable("t_ms_type.png")
+kbl_MS_type
+table(MS_QuestData_cat$type_MS)
+
+png("type_ms.png")
+ggplot(MS_QuestData_cat,aes(type_MS))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 10, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Distribution according to the type of Multiple Sclerosis") +
+  xlab("Type of Multiple Sclerosis") + ylab("Number of patients")
+dev.off()
+
+ggplot(MS_QuestData_cat,aes(type_MS))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 10, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Distribution according to the type of Multiple Sclerosis") +
+  xlab("Type of Multiple Sclerosis") + ylab("Number of patients")
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+
+fees%>%save_kable("fees.png")
+fees
+
+table(MS_QuestData_cat$fee_GP)
+
+png("fee_GP.png")
+ggplot(MS_QuestData_cat,aes(fee_GP))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Out of pocket expences at the GP") +
+  xlab("GP fees") + ylab("Number of participants")
+dev.off()
+
+ggplot(MS_QuestData_cat,aes(fee_GP))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Out of pocket expences at the GP") +
+  xlab("GP fees") + ylab("Number of participants")
+
+table(MS_QuestData_cat$fee_neuro)
+
+png("fee_neuro.png")
+ggplot(MS_QuestData_cat,aes(fee_neuro))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Out of pocket expences at the neurologist") +
+  xlab("Neurologist fees") + ylab("Number of participants")
+dev.off()
+
+ggplot(MS_QuestData_cat,aes(fee_neuro))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Out of pocket expences at the neurologist") +
+  xlab("Neurologist fees") + ylab("Number of participants")
+
+table(MS_QuestData_cat$fee_ophta)
+
+png("fee_ophta.png")
+ggplot(MS_QuestData_cat,aes(fee_ophta))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Out of pocket expences at the Ophtalmologist") +
+  xlab("Ophtalmologist fees") + ylab("Number of participants")
+dev.off()
+
+ggplot(MS_QuestData_cat,aes(fee_ophta))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Out of pocket expences at the Ophtalmologist") +
+  xlab("Ophtalmologist fees") + ylab("Number of participants")
+
+table(MS_QuestData_cat$fee_psy)
+
+png("fee_psy.png")
+ggplot(MS_QuestData_cat,aes(fee_psy))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Out of pocket expences at the psychiatrist") +
+  xlab("Psychiatrist fees") + ylab("Number of participants")
+dev.off()
+
+ggplot(MS_QuestData_cat,aes(fee_psy))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Out of pocket expences at the psychiatrist") +
+  xlab("Psychiatrist fees") + ylab("Number of participants")
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+
+#colnames(MS_Quest)[7:10]
+
+kable(cbind(label=1:4,response=c("Yes, I have taken paid leave", "Yes, I've taken unpaid leave","Yes, I've taken sick leave", "No" )))%>%
+  kable_styling(font_size = 12)
+
+table(MS_QuestData_tidy$leave)
+
+ggplot(MS_QuestData_tidy,aes(leave))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Most taken leaves") +
+  xlab("Type of leave") + ylab("Number of participants")
+
+
+#colnames(MS_Quest)[15:18]
+kable(cbind(label=1:4,response=c("GP","Neurologist","Ophtalmologist","Psychiatrist")))%>%
+  kable_styling(font_size = 12)%>%save_kable("Med.png")
+
+table(MS_QuestData_tidy$medical_professional)
+
+png("med_pro.png")
+ggplot(MS_QuestData_tidy,aes(medical_professional))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Most seen medical professional (1 year duration)") +
+  xlab("Medical professional") + ylab("Number of participants")
+dev.off()
+
+ggplot(MS_QuestData_tidy,aes(medical_professional))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Most seen medical professional (1 year duration)") +
+  xlab("Medical professional") + ylab("Number of participants")
+
+#colnames(MS_Quest)[27:36]
+kable(cbind(label=1:10,response=c("Hospital fees","Medical appointments","Medical exams","Spesialized hospital care","Treatments", "Home care services", "Home adjustments", "Medical material","Medical transport", "No item should be better reimbursed")))%>%
+  kable_styling(font_size = 12) %>% save_kable("Hosp_fees.png")
+
+table(MS_QuestData_tidy$hospital_fee)
+
+png("reimb.png")
+ggplot(MS_QuestData_tidy,aes(hospital_fee))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Expenses that should be best reimbursed according to participants") +
+  xlab("Type of hospital fees") + ylab("Number of participants")
+dev.off()
+
+ggplot(MS_QuestData_tidy,aes(hospital_fee))+
+  geom_bar(width = 0.7, position = position_dodge(width = 0.9))+
+  theme(axis.text = element_text(family = "serif", size = 14, face = "bold", 
+  vjust = 0.5, hjust=1))+
+  ggtitle("Expenses that should be best reimbursed according to participants") +
+  xlab("Type of hospital fees") + ylab("Number of participants")
+
+```
+
+
+
+## Multivariate analysis
+
+Reimbursment preferences (only patients have responded to the question)
+
+```{r message=FALSE, warning=FALSE}
+ggplot(data = MS_QuestData_tidy) + 
+  geom_bar(aes(x = hospital_fee)) + 
+  facet_wrap(~MS_status)
+```
+
+
+
+Reimbursment preferences according to the work situation
+
+```{r message=FALSE, warning=FALSE}
+ggplot(data = MS_QuestData_tidy) + 
+  geom_bar(aes(x = hospital_fee)) + 
+  facet_wrap(~work)
+```
+
+
+
+```{r message=FALSE, warning=FALSE}
+png("hosp_fee_MS_type.png")
+ggplot(data = MS_QuestData_tidy) + 
+  geom_bar(aes(x = hospital_fee)) + 
+  facet_wrap(~type_MS)+
+  ggtitle("Expenses that should be best reimbursed according to patients")+
+  xlab("Type of hospital fees") + ylab("Number of participants")
+dev.off()
+
+
+ggplot(data = MS_QuestData_tidy) + 
+  geom_bar(aes(x = hospital_fee)) + 
+  facet_wrap(~type_MS)+
+  ggtitle("Expenses that should be best reimbursed according to patients")+
+  xlab("Type of hospital fees") + ylab("Number of participants")
+```
+
+
+Regarding different medical appointments
+
+
+```{r}
+ggplot(data = MS_QuestData_cat) + 
+  geom_bar(aes(x = fee_GP)) + 
+  facet_wrap(~type_MS)+
+  ggtitle("GB fees according to patients")+
+  xlab("GB fees") + ylab("Number of participants")
+
+ggplot(data = MS_QuestData_cat) + 
+  geom_bar(aes(x = fee_neuro)) + 
+  facet_wrap(~type_MS)+
+  ggtitle("Neurologist fees according to patients")+
+  xlab("Neurologist fees") + ylab("Number of participants")
+
+ggplot(data = MS_QuestData_cat) + 
+  geom_bar(aes(x = fee_ophta)) + 
+  facet_wrap(~type_MS)+
+  ggtitle("Ophtalmologist fees according to patients")+
+  xlab("Ophtalmologist fees") + ylab("Number of participants")
+
+ggplot(data = MS_QuestData_cat) + 
+  geom_bar(aes(x = fee_psy)) + 
+  facet_wrap(~type_MS)+
+  ggtitle("Psychiatrist according to different type of patients")+
+  xlab("Psychiatrist fees") + ylab("Number of participants")
+
+```
+
