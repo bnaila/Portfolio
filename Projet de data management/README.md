@@ -1,6 +1,6 @@
 # Description
 
-##[Rapport de l'exercice de Data Management](https://bnaila.github.io/portfolio/Projet%20de%20data%20management/Rapport_eCRF_DataManagement_NB.html)
+## [Rapport de l'exercice de Data Management](https://bnaila.github.io/portfolio/Projet%20de%20data%20management/Rapport_eCRF_DataManagement_NB.html)
 
 1) Le fichier *Exemple_eCRF_Export_Base* contient un export d'une base de données eCRF. On y trouve 8 patients, avec les valeurs obtenues pour chacun d'entre eux, pour chaque variable de l'eCRF.
 2)  Le fichier *Exemple_eCRF_Data_Specification* est un fichier excel de spécifications des variables de l'eCRF.
