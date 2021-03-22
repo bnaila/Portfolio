@@ -3,7 +3,7 @@
 
 ## [Projet de Data Management](https://github.com/bnaila/portfolio/tree/main/Projet%20de%20data%20management)
 
-## Case study : Data Analysis
+## [Case study : Data Analysis](https://github.com/bnaila/portfolio/tree/main/Case%20study%20:%20Data%20Analysis)
 
 ## Analyse de données massives (horodateurs parisiens)
 
