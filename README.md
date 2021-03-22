@@ -12,6 +12,6 @@
 ## Statistiques pour la Génomique 
 ### Regression penalisée vs regression PLS 
 
-### Algorithme statistique pour la génomique 
+### [Algorithme statistique pour la génomique](https://github.com/bnaila/portfolio/tree/main/Rapports%20Algo%20stats%20(g%C3%A9nomique))
 #### Rapport 1 : Algorithme seqEM
 #### Rapport 2 : Algorithme MCMC
