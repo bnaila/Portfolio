@@ -2,13 +2,12 @@
 
 [Rapport de l'exercice de Data Management](https://bnaila.github.io/portfolio/Projet%20de%20data%20management/Rapport_eCRF_DataManagement_NB.html)
 
-1) Le fichier Exemple_eCRF_Export_Base contient un export d'une base de données eCRF. On y trouve 8 patients, avec les valeurs obtenues pour chacun d'entre eux, pour chaque variable de l'eCRF.
-2)  Le fichier Exemple_eCRF_Data_Specification est un fichier excel de spécifications des variables de l'eCRF.
+1) Le fichier *Exemple_eCRF_Export_Base* contient un export d'une base de données eCRF. On y trouve 8 patients, avec les valeurs obtenues pour chacun d'entre eux, pour chaque variable de l'eCRF.
+2)  Le fichier *Exemple_eCRF_Data_Specification* est un fichier excel de spécifications des variables de l'eCRF.
 L'étude clinique en question a été effectuée sur deux semaines, avec une visite à J0 et une visite à S2 (c'est pourquoi le fichier excel contient deux onglets : "Inclusion" et "Suivi").
 Dans chaque onglet se trouve la liste des variables récupérées pour chaque patient lors des visites.
 
 Les champs importants sont :
-
  - Le nom de la variable (NOM_VARIABLE)
  - Le type de la variable (TYPE)
  - L'appartenance à un dictionnaire (NOM_DICTIONNAIRE)
