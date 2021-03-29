@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projet de Data Management</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 10px 150px;
+        }
+
+        div.logos{ float: right;  }
+        div.logos img{height: 45px; margin: 5px;}
+        
+        div.content {
+            background-color: azure;
+            padding : 20px;
+      }        
+    </style>
+  
+</head>
+
+<body>
+  <div class="logos">
+        <a href="https://www.linkedin.com/in/naila-bouterfa/"><img src="iconfinder_linked_in_online_social_media_734393.png"></a>
+        <a href="tel:+33602504052"><img src="iconfinder_logo_social_media_phone_1078687.png"></a>
+        <a href="mailto:bouterfa.naila@gmail.com?subject=contact%20depuis%20bnaila.github.io"><img src="iconfinder_mail_email_envelope_send_message_1011335.png"></a>
+    </div>
+    
+    <h1 style="font-size:40px;">Portfolio</h1>
+       
+    <div class="content">
+
+      <h2> <a href="https://github.com/bnaila/portfolio/tree/main/Projet%20de%20data%20management">Projet de Data Management</a></h2>
+      <h3>Description </h3>
+      <lu>
+        <li>Le fichier *Exemple_eCRF_Export_Base* contient un export d'une base de données eCRF. On y trouve 8 patients, avec les valeurs obtenues pour chacun d'entre eux, pour chaque variable de l'eCRF.</li> 
+        <li>Le fichier *Exemple_eCRF_Data_Specification* est un fichier excel de spécifications des variables de l'eCRF.
+L'étude clinique en question a été effectuée sur deux semaines, avec une visite à J0 et une visite à S2 (c'est pourquoi le fichier excel contient deux onglets : "Inclusion" et "Suivi").
+Dans chaque onglet se trouve la liste des variables récupérées pour chaque patient lors des visites.</li>
+      </lu>
+<br><br>
+Les champs importants sont :
+        <lu>
+ <li> Le nom de la variable (NOM_VARIABLE)</li>
+ <li> Le type de la variable (TYPE)</li>
+ <li> L'appartenance à un dictionnaire (NOM_DICTIONNAIRE)<br>
+ie: Certaines variables ont des choix prédéfinis qui sont regroupés dans un dictionnaire (onglet Dictionnaires). C'est à dire qu'on s'attend à certaines valeurs et pas à d'autres pour cette variable.
+Si le champ dictionnaire est rempli, c'est que la réponse de l'utilisateur doit être comprise dans les valeurs de la colonne CODE_REPONSE du dictionnaire associé (onglet Dictionnaires).</li>
+ <li> La condition d'apparition de la variable qui se décrit au travers de 7 colonnes :<br>
+     - <b>OBLIGATOIRE</b> :  si la variable est obligatoire (égale à 1) ou non (égale à 0). Si la variable n'est pas obligatoire on s'attend à ce qu'elle soit potentiellement vide.<br>
+     - <b>COND_VARIABLE, COND_OPERATEUR, COND_VALEUR </b>: qui décrivent une condition d'apparition de la variable sur l'eCRF, exemple la variable B apparaît uniquement si la variable A est égale à 1.
+Les trois colonnes décrivent donc la condition : "A==1" nécessaire pour que la variable soit présente et remplie par le patient (pour plus d'informations voir l'onglet Feuille technique).<br>
+     - <b>COND_VARIABLE_2, COND_OPERATEUR_2, COND_VALEUR_2</b> :  Il est possible qu'une variable soit présente sous deux conditions qui doivent être vérifiées simultanément.
+  </li>
+  </lu>
+<br><br>
+
+Code R vérifie dans la base CSV les conditions suivantes en se basant sur l'excel de spécification :  
+       <lu> 
+ <li>  Si la variable est présente (il se peut qu'une variable soit présente dans la base et pas dans l'excel de spécification ou inversement)</li>
+ <li>  Si la variable est manquante ou non pour un patient (en prenant en compte les conditions si elles existent, effectivement des variables peuvent être manquantes et c'est normal)</li>
+ <li>  Pour les variables avec un dictionnaire attitré, si la valeur de la variable est dans la liste prédéfinie du dictionnaire.</li>
+        </lu>
+<br><br>
+<p> Le programme retourne un rapport lisible et utilisable par un ARC (= assistant de recherche clinique), afin que celui-ci puisse essayer de rattraper les données en se déplaçant dans les centres hospitaliers pour consulter les dossiers médicaux des patients.
+</p>
+  
+<a href="https://bnaila.github.io/Portfolio/Projet%20de%20data%20management/Rapport_eCRF_DataManagement_NB.html">Rapport de l'exercice de Data Management</a>
+      
+ </div>
+
+</body>
