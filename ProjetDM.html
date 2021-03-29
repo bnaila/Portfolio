@@ -6,7 +6,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projet de Data Management</title>
-    <!--<link rel="stylesheet" href="style.css">-->
     <style>
         body {
             font-family: Arial;
@@ -37,14 +36,14 @@
 
       <h2> <a href="https://github.com/bnaila/portfolio/tree/main/Projet%20de%20data%20management">Projet de Data Management</a></h2>
       <h3>Description </h3>
-      <lr>
-        <li></li> 
-      </lr>
-1) Le fichier *Exemple_eCRF_Export_Base* contient un export d'une base de données eCRF. On y trouve 8 patients, avec les valeurs obtenues pour chacun d'entre eux, pour chaque variable de l'eCRF.
-2)  Le fichier *Exemple_eCRF_Data_Specification* est un fichier excel de spécifications des variables de l'eCRF.
+      <lu>
+        <li>Le fichier *Exemple_eCRF_Export_Base* contient un export d'une base de données eCRF. On y trouve 8 patients, avec les valeurs obtenues pour chacun d'entre eux, pour chaque variable de l'eCRF.</li> 
+        <li>Le fichier *Exemple_eCRF_Data_Specification* est un fichier excel de spécifications des variables de l'eCRF.
 L'étude clinique en question a été effectuée sur deux semaines, avec une visite à J0 et une visite à S2 (c'est pourquoi le fichier excel contient deux onglets : "Inclusion" et "Suivi").
-Dans chaque onglet se trouve la liste des variables récupérées pour chaque patient lors des visites.
+Dans chaque onglet se trouve la liste des variables récupérées pour chaque patient lors des visites.</li>
+      </lu>
 
+        <p>
 Les champs importants sont :
  - Le nom de la variable (NOM_VARIABLE)
  - Le type de la variable (TYPE)
@@ -56,18 +55,20 @@ OBLIGATOIRE :  si la variable est obligatoire (égale à 1) ou non (égale à 0)
 COND_VARIABLE, COND_OPERATEUR, COND_VALEUR : qui décrivent une condition d'apparition de la variable sur l'eCRF, exemple la variable B apparaît uniquement si la variable A est égale à 1.
 Les trois colonnes décrivent donc la condition : "A==1" nécessaire pour que la variable soit présente et remplie par le patient (pour plus d'informations voir l'onglet Feuille technique).
 COND_VARIABLE_2, COND_OPERATEUR_2, COND_VALEUR_2 :  Il est possible qu'une variable soit présente sous deux conditions qui doivent être vérifiées simultanément.
+            </p>
 <br><br>
 
+       <p> 
 Code R vérifie dans la base CSV les conditions suivantes en se basant sur l'excel de spécification :  
 - Si la variable est présente (il se peut qu'une variable soit présente dans la base et pas dans l'excel de spécification ou inversement)
 - Si la variable est manquante ou non pour un patient (en prenant en compte les conditions si elles existent, effectivement des variables peuvent être manquantes et c'est normal)
 - Pour les variables avec un dictionnaire attitré, si la valeur de la variable est dans la liste prédéfinie du dictionnaire.
+        </p>
 
-Le programme retourne un rapport lisible et utilisable par un ARC (= assistant de recherche clinique), afin que celui-ci puisse essayer de rattraper les données en se déplaçant dans les centres hospitaliers pour consulter les dossiers médicaux des patients.
-
-        
-Rapport de l'exercice de Data Management
-      (https://bnaila.github.io/Portfolio/Projet%20de%20data%20management/Rapport_eCRF_DataManagement_NB.html)
+<p> Le programme retourne un rapport lisible et utilisable par un ARC (= assistant de recherche clinique), afin que celui-ci puisse essayer de rattraper les données en se déplaçant dans les centres hospitaliers pour consulter les dossiers médicaux des patients.
+</p>
+  
+        <a href="https://bnaila.github.io/Portfolio/Projet%20de%20data%20management/Rapport_eCRF_DataManagement_NB.html">Rapport de l'exercice de Data Management</a>
       
 
     </div>
