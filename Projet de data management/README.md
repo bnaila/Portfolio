@@ -25,6 +25,6 @@ Code R vérifie dans la base CSV les conditions suivantes en se basant sur l'exc
 - Si la variable est manquante ou non pour un patient (en prenant en compte les conditions si elles existent, effectivement des variables peuvent être manquantes et c'est normal)
 - Pour les variables avec un dictionnaire attitré, si la valeur de la variable est dans la liste prédéfinie du dictionnaire.
 
-Le programme retourne un rapport (du format de ton choix) qui lisible et utilisable par un ARC (= assistant de recherche clinique), afin que celui-ci puisse essayer de rattraper les données en se déplaçant dans les centres hospitaliers pour consulter les dossiers médicaux des patients.
+Le programme retourne un rapport lisible et utilisable par un ARC (= assistant de recherche clinique), afin que celui-ci puisse essayer de rattraper les données en se déplaçant dans les centres hospitaliers pour consulter les dossiers médicaux des patients.
 
 
