@@ -1,7 +1,5 @@
 # Description
 
-## [Rapport de l'exercice de Data Management](https://bnaila.github.io/Portfolio/Projet%20de%20data%20management/Rapport_eCRF_DataManagement_NB.html)
-
 1) Le fichier *Exemple_eCRF_Export_Base* contient un export d'une base de données eCRF. On y trouve 8 patients, avec les valeurs obtenues pour chacun d'entre eux, pour chaque variable de l'eCRF.
 2)  Le fichier *Exemple_eCRF_Data_Specification* est un fichier excel de spécifications des variables de l'eCRF.
 L'étude clinique en question a été effectuée sur deux semaines, avec une visite à J0 et une visite à S2 (c'est pourquoi le fichier excel contient deux onglets : "Inclusion" et "Suivi").
@@ -27,4 +25,5 @@ Code R vérifie dans la base CSV les conditions suivantes en se basant sur l'exc
 
 Le programme retourne un rapport lisible et utilisable par un ARC (= assistant de recherche clinique), afin que celui-ci puisse essayer de rattraper les données en se déplaçant dans les centres hospitaliers pour consulter les dossiers médicaux des patients.
 
+## [Rapport de l'exercice de Data Management](https://bnaila.github.io/Portfolio/Projet%20de%20data%20management/Rapport_eCRF_DataManagement_NB.html)
 
