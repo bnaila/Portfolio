@@ -3,6 +3,9 @@
 ## [Projet de Data Management](https://github.com/bnaila/portfolio/tree/main/Projet%20de%20data%20management)
 Données cliniques (eCRF), specifications et verifications associées.
 
+## [Analyse de données (API DEEZER)](https://github.com/bnaila/portfolio/tree/main/Analyse%20de%20donnée%20(API%20Deezer))
+Données d'API Deezer, data munging et exploitation des données
+
 ## [Case study : Data Analysis](https://github.com/bnaila/portfolio/tree/main/Case%20study%20:%20Data%20Analysis)
 Etude de cas business.
 
