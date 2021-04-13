@@ -38,10 +38,28 @@
             padding : 20px;
         }
         
+        p.description {
+            float:right; 
+            max-width: 500px; 
+            text-align:center; 
+            margin-right:250px; 
+            line-height: 1.6; 
+            color: #656565;
+        }
+        
         @media only screen and (max-width: 760px){
             body {
             margin: 10px ;
             }
+        img.cover-profile {
+            height:100px ;   
+            width: 100px ;
+            margin-left: 10px;
+            }
+            
+        p.description {
+            margin-right:50px; 
+        }
         }
     </style>
 </head>
@@ -55,7 +73,7 @@
     
     <h1 style="font-size:40px;">Portfolio</h1>
     
-    <p style="float:right; max-width: 500px; text-align:center; margin-right:250px; line-height: 1.6; color: #656565;">&laquo; Diplomée en 2019 d'un master en Ingénierie Mathématique et Statistique. J'analyse sous R et Python des données avec une approche Statistique, ma curiosité et enthousiasme sont pour tout le cycle de Traitement de la Donnée et technologies du numérique. &raquo;</p>
+    <p class="description">&laquo; Diplomée en 2019 d'un master en Ingénierie Mathématique et Statistique. J'analyse sous R et Python des données avec une approche Statistique, ma curiosité et enthousiasme sont pour tout le cycle de Traitement de la Donnée et technologies du numérique. &raquo;</p>
 
     <div class="header">
         <img class="cover-profile" src="profil.jpeg">
