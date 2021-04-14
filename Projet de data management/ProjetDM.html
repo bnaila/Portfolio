@@ -18,6 +18,7 @@
         div.logos img{height: 45px; margin: 5px;}
         
         div.content {
+            
             background-color: azure;
             padding : 20px;
       }        
@@ -45,29 +46,31 @@
 
       <h2> <a href="https://github.com/bnaila/portfolio/tree/main/Projet%20de%20data%20management">Projet de Data Management</a></h2>
       <h3>Description </h3>
-      <lu>
+      <ul>
         <li>Le fichier <b>Exemple_eCRF_Export_Base</b> contient un export d'une base de données eCRF. On y trouve 8 patients, avec les valeurs obtenues pour chacun d'entre eux, pour chaque variable de l'eCRF.</li> 
         <li>Le fichier <b>Exemple_eCRF_Data_Specification</b> est un fichier excel de spécifications des variables de l'eCRF.
 L'étude clinique en question a été effectuée sur deux semaines, avec une visite à J0 et une visite à S2 (c'est pourquoi le fichier excel contient deux onglets : "Inclusion" et "Suivi").
 Dans chaque onglet se trouve la liste des variables récupérées pour chaque patient lors des visites.</li>
-      </lu>
+      </ul>
 <br><br>
+        
+        
 <u>Les champs importants sont :</u><br>
-<lu>
+<ul>
  <li> Le nom de la variable (NOM_VARIABLE)</li>
  <li> Le type de la variable (TYPE)</li>
  <li> L'appartenance à un dictionnaire (NOM_DICTIONNAIRE)<br>
 ie: Certaines variables ont des choix prédéfinis qui sont regroupés dans un dictionnaire (onglet Dictionnaires). C'est à dire qu'on s'attend à certaines valeurs et pas à d'autres pour cette variable.
 Si le champ dictionnaire est rempli, c'est que la réponse de l'utilisateur doit être comprise dans les valeurs de la colonne CODE_REPONSE du dictionnaire associé (onglet Dictionnaires).</li>
  <li> La condition d'apparition de la variable qui se décrit au travers de 7 colonnes :<br>
-     <lu>
+     <ul>
       <li><b>OBLIGATOIRE</b> :  si la variable est obligatoire (égale à 1) ou non (égale à 0). Si la variable n'est pas obligatoire on s'attend à ce qu'elle soit potentiellement vide.</li><br>
       <li><b>COND_VARIABLE, COND_OPERATEUR, COND_VALEUR </b>: qui décrivent une condition d'apparition de la variable sur l'eCRF, exemple la variable B apparaît uniquement si la variable A est égale à 1.</li>
 Les trois colonnes décrivent donc la condition : "A==1" nécessaire pour que la variable soit présente et remplie par le patient (pour plus d'informations voir l'onglet Feuille technique).</li><br>
       <li><b>COND_VARIABLE_2, COND_OPERATEUR_2, COND_VALEUR_2</b> :  Il est possible qu'une variable soit présente sous deux conditions qui doivent être vérifiées simultanément.
-     </lu> 
+     </ul> 
  </li>
-  </lu>
+  </ul>
 <br><br>
 
 Code R vérifie dans la base CSV les conditions suivantes en se basant sur l'excel de spécification :  <br>
