@@ -1,0 +1,282 @@
+---
+title: "Projet de statistiques pour la Génomique"
+author: "Naila Bouterfa"
+date: "5 mai 2018"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# Introduction 
+
+Nous choisissons une base de données sur le cancer des ovaires "GSE14764" dans la librarie "Curated Ovarian Data" et faisons l'extraction des variables d'expression de gènes et d'une variable qualitative binaire que l'on va chercher à prédire tout en définissant la signature associée. Cette variable ici Y est celle relative à la récurrence de la maladie. Elle prend la valeur "1" s'il y a une récurrence du cancer et "0" sinon.
+
+Nous allons mener pour cela une régression linéaire pénalisée sur ses données avec étude de la stabilité du modèle puis dans un second temps une régression PLS parcimonieuse dont on analysera également la stabilité.
+
+
+# Importation de données 
+
+Dans ce qui suit nous importons les données d'expression de gènes d'un coté et la donnée phénotypique que nous traduisons en binaire de l'autre.
+
+Le traitement nécessite aussi de transposer la matrice d'expression de gènes et de supprimer les valeurs manquantes.
+
+Au final, nous avons une matrice avec 76 individus et 13104 gènes.
+
+```{r message=FALSE, warning=FALSE}
+
+rm(list=ls())
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("curatedOvarianData")
+library("curatedOvarianData")
+#biocLite("Biobase")
+library('Biobase')
+
+data(GSE14764_eset)
+
+expressionData <- exprs(GSE14764_eset)
+
+otherData <- pData(GSE14764_eset@phenoData)
+
+Y <- (otherData$recurrence_status == "recurrence")*1
+
+M=t(expressionData)
+
+M=M[-which(is.na(Y)),]
+Y=Y[-which(is.na(Y))]
+
+```
+
+# Régression pénalisée 
+
+Nous procédons dans un premier temps à une validation croisée qui nous servira pour extraire la valeur de lambda minimale puis dans un second temps à une régression pénalisée avec cette valeur optimale sur un échantillon que nous divisons en échantillon d'apprentissage et échantillon test. Enfin nous procédons à une prédiction et calculons le taux erreur et le pourcentage d'erreur associé.
+
+```{r}
+
+library(glmnet)
+
+RegCv = cv.glmnet(M,Y,family='binomial',type.measure = "class")
+
+Lmin=RegCv$lambda.min
+
+plot(RegCv)
+
+ind=sample(1:76)
+
+indtrain=ind[1:60]
+indtest=ind[60:76]
+
+Mtrain=M[indtrain,]
+Ytrain=Y[indtrain]
+
+Mtest=M[indtest,]
+Ytest=Y[indtest]
+
+Reg=glmnet(Mtrain,Ytrain,family="binomial")
+
+plot(Reg)
+
+coefficients1=coef(Reg,s=Lmin)
+
+prediction1 = predict(Reg,Mtest,s=Lmin,type="class")
+
+Taux_Err1=sum(Ytest!=prediction1)/length(Ytest)
+Taux_Err1
+
+Pourc_err1=Taux_Err1*100
+Pourc_err1
+```
+
+
+# Etude de stabilté de la régression lineaire pénalisée 
+
+Construction de la fonction bootstrap :
+
+```{r}
+bootstrap = function (Ma){
+mix=sample(1:dim(Ma)[1],dim(Ma)[1],replace=TRUE)
+Ma[mix,]
+}
+```
+
+Boostrap sur notre matrice de données :
+
+```{r}
+
+Mnew=bootstrap(M)
+
+RegCv2 = cv.glmnet(Mnew,Y,family='binomial',type.measure = "class")
+
+Lmin=RegCv2$lambda.min
+
+plot(RegCv2)
+
+
+ind=sample(1:76)
+
+indtrain=ind[1:60]
+indtest=ind[60:76]
+
+Mtrain=Mnew[indtrain,]
+Ytrain=Y[indtrain]
+
+Mtest=Mnew[indtest,]
+Ytest=Y[indtest]
+
+Reg2=glmnet(Mtrain,Ytrain,family="binomial")
+
+coefficients2=coef(Reg2,s=Lmin)
+
+prediction2 = predict(Reg2,Mtest,s=Lmin,type="class")
+
+Taux_Err2=sum(Ytest!=prediction2)/length(Ytest)
+Taux_Err2
+Pourc_err2=Taux_Err2*100
+Pourc_err2
+
+
+```
+
+Commentaire : En effectuant un bootstrap on obtient un taux d'erreur différent ce qui montre l'instabilité du modèle.
+
+
+On peut maintenant effectuer plusieurs bootsrap comme il suit :
+
+```{r}
+
+R=100
+Coeff=list()
+
+for (j in 1:R){
+  Mnew=bootstrap(M)
+  cvfit = cv.glmnet(Mnew,Y,family='binomial',type.measure = "class") 
+  Lmin=cvfit$lambda.min
+  reg=glmnet(M,Y,family="binomial")
+  co=coef(reg,s=Lmin)
+  Coeff[[j]]=co@i
+}
+
+b = unlist(Coeff)
+sort(table(b),decreasing = TRUE)
+
+num_selection_signature1=sort(table(b),decreasing = TRUE)[2:7]
+num_selection_signature1
+names_selection_signature1=colnames(M[,as.numeric(names(num_selection_signature1))])
+names_selection_signature1
+
+```
+
+On choisit de retenir les gènes qui apparaissent un grand nombre de fois.
+Ces gènes sont classés dans un ordre décroissant de pourcentage d'apparition.
+
+*Limites de la methode LASSO :*
+
+- Que peut-on reprocher a cette methode en termes de prise en compte de
+la colinearité ? 
+
+On obtient de bon estimateurs cependant la methode ne traite pas le problème de corrélation des variables et la variance des estimateurs reste élevée. En effet, cette méthode privilegiera une variable au détriment des autres du fait d'une forte corrélation entre les deux. On perd donc en information.
+
+- Quelles en sont les conséquences possibles sur la signature ?
+
+On peut sélectionner une mauvais variable qui est très corrélée à la bonne variable. Ou alors une seule parmi plusieurs variables intéressantes d'ou la perte d'information.
+
+- Voyez-vous des pistes à explorer pour améliorer cela?
+
+Les méthodes "Elastic net" qui ajoute une pénalité ridge au Lasso ou la méthode "Group Lasso" qui fournit des groupes de gènes au lieu de gènes peuvent donner de meilleurs résultats.
+
+
+Evaluation du modèle construit sur la signature : 
+
+```{r}
+
+Msign=M[,names_selection_signature1]
+
+ind=sample(1:76)
+
+indtrain=ind[1:60]
+indtest=ind[60:76]
+
+Mstrain=Msign[indtrain,]
+Ytrain=Y[indtrain]
+
+Mstest=Msign[indtest,]
+Ytest=Y[indtest]
+
+RegScv=cv.glmnet(Msign,Y,family="binomial",type.measure = "class")
+lmin=RegScv$lambda.min
+
+RegS=glmnet(Mstrain,Ytrain,family="binomial")
+
+prediction3=predict(RegS,Mstest,s=lmin,type="class")
+
+Taux_Err3=sum(Ytest!=prediction3)/length(Ytest)
+Taux_Err3
+Pourc_err3=Taux_Err3*100
+Pourc_err3
+
+```
+
+Le taux d'erreur est globalement réduit. On a stabilisé le modele de cette façon.
+
+
+
+# Régression PLS parcimonieuse
+
+```{r message=FALSE, warning=FALSE}
+library("plsgenomics")
+
+lambdas=seq(0,1,0.1)
+
+sparsePLScv=spls.cv(X=M,Y=Y,lambda.l1.range=lambdas, ncomp.range=1:20)
+
+#valeurs optimales :
+
+lambda=sparsePLScv$lambda.l1.opt
+comp=sparsePLScv$ncomp.opt
+
+ind=sample(1:76)
+
+indtrain=ind[1:60]
+indtest=ind[60:76]
+
+MTrain=M[indtrain,]
+YTrain=Y[indtrain]
+
+MTest=M[indtest,]
+YTest=Y[indtest]
+
+
+sparsePLS=spls(Xtrain=MTrain,Ytrain=YTrain,lambda.l1 = lambda,ncomp=comp,Xtest=MTest)
+
+```
+
+# Etude de stabilité de la méthode PLS parcimonieuse
+
+```{r}
+R=100
+Coeff=list()
+
+for (j in 1:R){
+  Mnew=bootstrap(M)
+  sparsePLScv=spls.cv(X=Mnew,Y=Y,lambda.l1.range=lambdas, ncomp.range=1:20)
+  lambda=sparsePLScv$lambda.l1.opt
+  comp=sparsePLScv$ncomp.opt
+  MTest=Mnew[indtest,]
+  MTrain=Mnew[indtrain,]
+  sparsePLS=spls(Xtrain=MTrain,Ytrain=YTrain,lambda.l1 = lambda,ncomp=comp,Xtest=MTest)
+  Coeff[[j]]=sparsePLS$A
+}
+
+c = unlist(Coeff)
+
+num_selection_signature2=sort(table(c),decreasing = TRUE)[2:7]
+num_selection_signature2
+names_selection_signature2=colnames(M[,as.numeric(names(num_selection_signature2))])
+names_selection_signature2
+```
+
